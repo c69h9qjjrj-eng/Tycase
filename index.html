@@ -641,10 +641,11 @@
         badge: "Original Design",
         rating: 5.0,
         images: [
-          "iphone_17_mockup_1.png",
-          "iphone_17_mockup1.1.png",
+          "https://placehold.co/600x700/2e3a2d/e8e0d0?text=Shadow+Drift",
+          "https://placehold.co/600x700/3a4839/e8e0d0?text=View+2",
+          "https://placehold.co/600x700/1e261d/c9a96e?text=View+3"
         ],
-        img: "iphone_17_mockup_1.png" // Fallback
+        img: "https://placehold.co/600x700/2e3a2d/e8e0d0?text=Shadow+Drift" // Fallback
       },
       {
         id: 2,
@@ -717,7 +718,8 @@
       }
       
       const product = products.find(p => p.id == productId);
-      const total = product.images.length;
+      const images = product.images || [product.img];
+      const total = images.length;
 
       // Wrap around
       if (newIndex < 0) newIndex = total - 1;
@@ -730,7 +732,7 @@
       if (imgEl) {
         imgEl.style.opacity = '0';
         setTimeout(() => {
-          imgEl.src = product.images[newIndex];
+          imgEl.src = images[newIndex];
           imgEl.style.opacity = '1';
         }, 175);
       }
@@ -762,14 +764,15 @@
     function renderProducts() {
       const grid = document.getElementById('product-grid');
       // Only render if currently empty to avoid wiping state
-      if (grid.innerHTML.trim() !== '') return;
+      if (grid.children.length > 0) return;
       
       grid.innerHTML = products.map((product, index) => {
         const isWishlisted = wishlist.includes(product.id);
         const animDelay = index * 0.1;
         const currentImgIdx = cardImageIndex[product.id] || 0;
         
-        const dotsHtml = product.images.map((img, i) => 
+        const images = product.images || [product.img];
+        const dotsHtml = images.map((img, i) => 
           `<button class="gallery-dot dot-${product.id} ${i === currentImgIdx ? 'dot-active' : ''}" onclick="setCardImage(${product.id}, ${i}, event)" aria-label="View image ${i+1}"></button>`
         ).join('');
 
@@ -782,7 +785,7 @@
             <div class="product-image-wrap" 
                  ontouchstart="handleTouchStart(event)" 
                  ontouchend="handleTouchEnd(event, ${product.id})">
-              <img src="${product.images[currentImgIdx]}" id="card-img-${product.id}" alt="${product.name}" class="product-img" loading="lazy">
+              <img src="${images[currentImgIdx]}" id="card-img-${product.id}" alt="${product.name}" class="product-img" loading="lazy">
               <div class="gallery-overlay"></div>
               <div class="gallery-dots" onclick="event.stopPropagation()">
                 ${dotsHtml}
@@ -919,7 +922,7 @@
       } else {
         container.innerHTML = cart.map(item => `
           <div class="cart-item">
-            <img src="${item.img}" alt="${item.name}" class="cart-item-img">
+            <img src="${item.img || (item.images && item.images[0])}" alt="${item.name}" class="cart-item-img">
             <div class="cart-item-details">
               <div>
                 <div class="cart-item-title">${item.name}</div>
