@@ -186,11 +186,25 @@
     .product-card { position: relative; background: var(--warm-neutral); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.4s ease; }
     .product-card:hover { transform: translateY(-10px); }
     .product-image-wrap { position: relative; overflow: hidden; aspect-ratio: 6/7; background: #e0d8c8; }
-    .product-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
+    .product-img { width: 100%; height: 100%; object-fit: contain; transition: opacity 0.35s ease, transform 0.7s ease; }
     .product-card:hover .product-img { transform: scale(1.05); }
+
+    .gallery-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: linear-gradient(to top, rgba(46,58,45,0.5), transparent); z-index: 2; pointer-events: none; }
+    .gallery-dots { position: absolute; bottom: 12px; left: 0; width: 100%; display: flex; justify-content: center; gap: 6px; z-index: 3; pointer-events: none; }
+    .gallery-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(232,224,208,0.4); cursor: pointer; transition: all 0.2s ease; border: none; padding: 0; pointer-events: auto; }
+    .gallery-dot.dot-active { background: #c9a96e; transform: scale(1.2); }
     
-    .product-badge { position: absolute; top: 15px; left: 15px; background: var(--warm-neutral); color: var(--primary); padding: 5px 10px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; z-index: 2; }
-    .wishlist-btn { position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; border-radius: 50%; background: rgba(232, 224, 208, 0.1); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 2; transition: all 0.3s; }
+    .gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 50%; background: rgba(46,58,45,0.75); border: 1px solid rgba(201,169,110,0.3); color: #e8e0d0; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.2s ease; z-index: 4; }
+    .product-image-wrap:hover .gallery-arrow { opacity: 1; }
+    .gallery-arrow.left { left: 10px; }
+    .gallery-arrow.right { right: 10px; }
+    
+    @media (pointer: coarse) {
+      .gallery-arrow { display: none !important; }
+    }
+    
+    .product-badge { position: absolute; top: 15px; left: 15px; background: var(--warm-neutral); color: var(--primary); padding: 5px 10px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; z-index: 5; }
+    .wishlist-btn { position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; border-radius: 50%; background: rgba(232, 224, 208, 0.1); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 5; transition: all 0.3s; }
     .wishlist-btn:hover { background: rgba(232, 224, 208, 0.3); }
     .wishlist-btn svg { width: 18px; height: 18px; stroke: var(--warm-neutral); stroke-width: 1.5; fill: none; transition: all 0.3s; }
     .wishlist-btn.active svg { stroke: var(--gold-accent); fill: var(--gold-accent); }
@@ -490,7 +504,7 @@
         <h6 style="color: var(--gold-accent); letter-spacing: 0.2em; text-transform: uppercase; font-size: 12px; font-weight: 600;">Featured Release</h6>
         <h2 style="font-size: 40px; color: var(--warm-neutral); line-height: 1.1;">The Emerald<br><span style="font-style: italic; color: var(--gold-accent);">Serpent</span></h2>
         <p style="color: rgba(232,224,208,0.7); font-size: 16px;">Our most complex illustration to date. Featuring gold-foil accents embedded directly into the case back. Only 100 units produced.</p>
-        <button class="btn btn-gold" style="margin-top: 20px;" onclick="addSpecificToCart('prod_1')">Secure Yours - €54</button>
+        <button class="btn btn-gold" style="margin-top: 20px;" onclick="addSpecificToCart(1)">Secure Yours - €54</button>
       </div>
       <div class="spotlight-image">
         <img src="https://placehold.co/600x800/1e261d/c9a96e?text=Emerald+Serpent+Case" alt="The Emerald Serpent Case">
@@ -619,30 +633,167 @@
   </div>
   <script>
     const products = [
-      { id: 'prod_1', name: 'The Emerald Serpent', tagline: 'Gold-foil embedded botanical serpent', price: 54.00, badge: 'Limited 100', rating: 4.9, img: 'iphone_17_mockup_1.png' },
-      { id: 'prod_2', name: 'Midnight Owl', tagline: 'Monochrome dot-work on matte black', price: 48.00, badge: null, rating: 4.8, img: 'https://placehold.co/600x700/1e261d/e8e0d0?text=Midnight+Owl' },
-      { id: 'prod_3', name: 'Crimson Peony', tagline: 'Vibrant floral over translucent base', price: 52.00, badge: 'Bestseller', rating: 5.0, img: 'https://placehold.co/600x700/4a2c2a/e8e0d0?text=Crimson+Peony' },
-      { id: 'prod_4', name: 'Geometric Mirage', tagline: 'Op-art pattern that shifts in light', price: 45.00, badge: null, rating: 4.7, img: 'https://placehold.co/600x700/1a1f1a/e8e0d0?text=Geometric+Mirage' },
-      { id: 'prod_5', name: 'Oceanic Trench', tagline: 'Deep blue fluid art with silver flakes', price: 54.00, badge: 'Low Stock', rating: 4.9, img: 'https://placehold.co/600x700/1c3144/e8e0d0?text=Oceanic+Trench' }
+      {
+        id: 1,
+        name: "Shadow Drift",
+        tagline: "Abstract darkness in motion. Bold strokes, zero noise.",
+        price: 34.99,
+        badge: "Original Design",
+        rating: 5.0,
+        images: [
+          "https://placehold.co/600x700/2e3a2d/e8e0d0?text=Shadow+Drift",
+          "https://placehold.co/600x700/3a4839/e8e0d0?text=View+2",
+          "https://placehold.co/600x700/1e261d/c9a96e?text=View+3"
+        ],
+        img: "https://placehold.co/600x700/2e3a2d/e8e0d0?text=Shadow+Drift" // Fallback
+      },
+      {
+        id: 2,
+        name: "Kintsugi Noir",
+        tagline: "Broken. Repaired in gold. More beautiful for it.",
+        price: 39.99,
+        badge: "Editor's Pick",
+        rating: 5.0,
+        images: [
+          "https://placehold.co/600x700/1e261d/e8e0d0?text=Kintsugi+Noir",
+          "https://placehold.co/600x700/3a4839/e8e0d0?text=View+2",
+          "https://placehold.co/600x700/1e261d/c9a96e?text=View+3"
+        ],
+        img: "https://placehold.co/600x700/1e261d/e8e0d0?text=Kintsugi+Noir"
+      },
+      {
+        id: 3,
+        name: "Stag & Summit",
+        tagline: "Where sculpture meets the wild horizon.",
+        price: 36.99,
+        badge: "Original Design",
+        rating: 4.9,
+        images: [
+          "https://placehold.co/600x700/4a2c2a/e8e0d0?text=Stag+%26+Summit",
+          "https://placehold.co/600x700/3a4839/e8e0d0?text=View+2",
+          "https://placehold.co/600x700/1e261d/c9a96e?text=View+3"
+        ],
+        img: "https://placehold.co/600x700/4a2c2a/e8e0d0?text=Stag+%26+Summit"
+      },
+      {
+        id: 4,
+        name: "Wild Roads",
+        tagline: "Every journey deserves a story worth telling.",
+        price: 34.99,
+        badge: "Original Design",
+        rating: 4.8,
+        images: [
+          "https://placehold.co/600x700/1a1f1a/e8e0d0?text=Wild+Roads",
+          "https://placehold.co/600x700/3a4839/e8e0d0?text=View+2",
+          "https://placehold.co/600x700/1e261d/c9a96e?text=View+3"
+        ],
+        img: "https://placehold.co/600x700/1a1f1a/e8e0d0?text=Wild+Roads"
+      },
+      {
+        id: 5,
+        name: "Valley Light",
+        tagline: "Painted skies. Still water. Carry the calm.",
+        price: 36.99,
+        badge: "Original Design",
+        rating: 5.0,
+        images: [
+          "https://placehold.co/600x700/1c3144/e8e0d0?text=Valley+Light",
+          "https://placehold.co/600x700/3a4839/e8e0d0?text=View+2",
+          "https://placehold.co/600x700/1e261d/c9a96e?text=View+3"
+        ],
+        img: "https://placehold.co/600x700/1c3144/e8e0d0?text=Valley+Light"
+      }
     ];
 
     let cart = [];
     let wishlist = [];
+    const cardImageIndex = {};
+    products.forEach(p => cardImageIndex[p.id] = 0);
+
+    // --- GALLERY CONTROLS ---
+    function setCardImage(productId, newIndex, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      
+      const product = products.find(p => p.id == productId);
+      const total = product.images.length;
+
+      // Wrap around
+      if (newIndex < 0) newIndex = total - 1;
+      if (newIndex >= total) newIndex = 0;
+
+      cardImageIndex[productId] = newIndex;
+
+      // Update main image
+      const imgEl = document.getElementById('card-img-' + productId);
+      if (imgEl) {
+        imgEl.style.opacity = '0';
+        setTimeout(() => {
+          imgEl.src = product.images[newIndex];
+          imgEl.style.opacity = '1';
+        }, 175);
+      }
+
+      // Update dots
+      const dots = document.querySelectorAll('.dot-' + productId);
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('dot-active', i === newIndex);
+      });
+    }
+
+    let touchStartX = 0;
+    function handleTouchStart(e) {
+      touchStartX = e.changedTouches[0].screenX;
+    }
+    
+    function handleTouchEnd(e, productId) {
+      const touchEndX = e.changedTouches[0].screenX;
+      const diffX = touchEndX - touchStartX;
+      
+      if (diffX > 40) { // Swiped right -> previous image
+        setCardImage(productId, cardImageIndex[productId] - 1);
+      } else if (diffX < -40) { // Swiped left -> next image
+        setCardImage(productId, cardImageIndex[productId] + 1);
+      }
+    }
 
     // --- RENDER PRODUCTS ---
     function renderProducts() {
       const grid = document.getElementById('product-grid');
+      // Only render if currently empty to avoid wiping state
+      if (grid.innerHTML.trim() !== '') return;
+      
       grid.innerHTML = products.map((product, index) => {
         const isWishlisted = wishlist.includes(product.id);
         const animDelay = index * 0.1;
+        const currentImgIdx = cardImageIndex[product.id] || 0;
+        
+        const dotsHtml = product.images.map((img, i) => 
+          `<button class="gallery-dot dot-${product.id} ${i === currentImgIdx ? 'dot-active' : ''}" onclick="setCardImage(${product.id}, ${i}, event)" aria-label="View image ${i+1}"></button>`
+        ).join('');
+
         return `
           <div class="product-card reveal" style="transition-delay: ${animDelay}s">
             ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
-            <button class="wishlist-btn heart-btn ${isWishlisted ? 'wishlisted' : ''}" onclick="toggleWishlist('${product.id}', this, event)" aria-label="Add ${product.name} to wishlist">
+            <button class="wishlist-btn heart-btn ${isWishlisted ? 'wishlisted' : ''}" onclick="toggleWishlist(${product.id}, this, event)" aria-label="Add ${product.name} to wishlist">
               <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             </button>
-            <div class="product-image-wrap">
-              <img src="${product.img}" alt="${product.name}" class="product-img" loading="lazy">
+            <div class="product-image-wrap" 
+                 ontouchstart="handleTouchStart(event)" 
+                 ontouchend="handleTouchEnd(event, ${product.id})">
+              <img src="${product.images[currentImgIdx]}" id="card-img-${product.id}" alt="${product.name}" class="product-img" loading="lazy">
+              <div class="gallery-overlay"></div>
+              <div class="gallery-dots" onclick="event.stopPropagation()">
+                ${dotsHtml}
+              </div>
+              <button class="gallery-arrow left" onclick="setCardImage(${product.id}, cardImageIndex[${product.id}] - 1, event)" aria-label="Previous image">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <button class="gallery-arrow right" onclick="setCardImage(${product.id}, cardImageIndex[${product.id}] + 1, event)" aria-label="Next image">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
             </div>
             <div class="product-info">
               <div class="product-header">
@@ -667,7 +818,7 @@
     // --- WISHLIST LOGIC ---
     function toggleWishlist(id, element, event) {
       if(event) event.stopPropagation();
-      const index = wishlist.indexOf(id);
+      const index = wishlist.findIndex(w => w == id);
       if (index > -1) {
         wishlist.splice(index, 1);
         if(element) element.classList.remove('wishlisted');
@@ -714,10 +865,10 @@
     // --- CART LOGIC ---
     function addSpecificToCart(id, event) {
       if(event) event.stopPropagation();
-      const product = products.find(p => p.id === id);
+      const product = products.find(p => p.id == id);
       if(!product) return;
       
-      const existingItem = cart.find(item => item.id === id);
+      const existingItem = cart.find(item => item.id == id);
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
@@ -731,7 +882,7 @@
     }
 
     function updateQuantity(id, change) {
-      const itemIndex = cart.findIndex(item => item.id === id);
+      const itemIndex = cart.findIndex(item => item.id == id);
       if (itemIndex > -1) {
         cart[itemIndex].quantity += change;
         if (cart[itemIndex].quantity <= 0) {
